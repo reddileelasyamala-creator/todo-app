@@ -92,7 +92,9 @@ function App() {
 
   return (
     <div className="app">
-      <h1>My To-Do</h1>
+      <h1 style={{ color: "#333", textAlign: "center" }}>
+  My To-Do
+</h1>
 
       <div className="card-container">
         {cards.map((card) => (
