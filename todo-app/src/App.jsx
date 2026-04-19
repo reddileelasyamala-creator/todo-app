@@ -3,6 +3,7 @@ import "./App.css";
 
 function App() {
   const [cards, setCards] = useState([]);
+  const [darkMode, setDarkMode] = useState(false); // ✅ FIXED POSITION
 
   useEffect(() => {
     const savedCards = JSON.parse(localStorage.getItem("cards"));
@@ -82,7 +83,6 @@ function App() {
     );
   };
 
-  // ✏️ START EDIT
   const startEdit = (cardId, index) => {
     setCards(
       cards.map((card) => {
@@ -96,7 +96,6 @@ function App() {
     );
   };
 
-  // 💾 SAVE EDIT
   const saveEdit = (cardId, index, newText) => {
     setCards(
       cards.map((card) => {
@@ -112,20 +111,63 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <h1 style={{ color: "#333", textAlign: "center" }}>
-        My To-Do
-      </h1>
+    <div
+      className="app"
+      style={{
+        background: darkMode ? "#1e1e2f" : "#f4f6f8",
+        color: darkMode ? "white" : "black",
+        minHeight: "100vh"
+      }}
+    >
+      {/* 🌙 Toggle Button */}
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px"
+        }}
+      >
+        {darkMode ? "☀️ Light" : "🌙 Dark"}
+      </button>
+
+      <h1
+  style={{
+    color: darkMode ? "white" : "#333",
+    textAlign: "center"
+  }}
+>
+  My To-Do
+</h1>
 
       <div className="card-container">
         {cards.map((card) => (
-          <div key={card.id} className="card">
+          <div
+            key={card.id}
+            className="card"
+            style={{
+              background: darkMode ? "#2c2c3e" : "#e7cc95"
+            }}
+          >
+            <button
+  className="delete-card"
+  style={{
+    color: darkMode ? "#ff6b6b" : "black",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer"
+  }}
+>
+  🗑
+</button>
 
-            <button className="delete-card" onClick={() => deleteCard(card.id)}>
-              🗑
-            </button>
-
-            <h2>{card.title}</h2>
+            <h2
+  style={{
+    color: darkMode ? "white" : "#333"
+  }}
+>
+  {card.title}
+</h2>
 
             <ul>
               {card.tasks.map((task, index) => (
@@ -136,7 +178,6 @@ function App() {
                     onChange={() => toggleTask(card.id, index)}
                   />
 
-                  {/* ✨ EDIT UI */}
                   {task.editing ? (
                     <input
                       value={task.text}
@@ -166,11 +207,18 @@ function App() {
                   )}
 
                   <button
-                    onClick={() => deleteTask(card.id, index)}
-                    className="delete-task"
-                  >
-                    ✖
-                  </button>
+  onClick={() => deleteTask(card.id, index)}
+  className="delete-task"
+  style={{
+    color: darkMode ? "#ff6b6b" : "red",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    marginLeft: "10px"
+  }}
+>
+  ✖
+</button>
                 </li>
               ))}
             </ul>
