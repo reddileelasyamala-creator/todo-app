@@ -3,7 +3,8 @@ import "./App.css";
 
 function App() {
   const [cards, setCards] = useState([]);
-  const [darkMode, setDarkMode] = useState(false); // ✅ FIXED POSITION
+  const [darkMode, setDarkMode] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const savedCards = JSON.parse(localStorage.getItem("cards"));
@@ -114,113 +115,98 @@ function App() {
     <div
       className="app"
       style={{
-        background: darkMode ? "#1e1e2f" : "#f4f6f8",
-        color: darkMode ? "white" : "black",
-        minHeight: "100vh"
+        background: darkMode
+          ? "linear-gradient(135deg, #1e1e2f, #2c2c3e)"
+          : "linear-gradient(135deg, #667eea, #764ba2)",
+        minHeight: "100vh",
+        color: darkMode ? "white" : "black"
       }}
     >
-      {/* 🌙 Toggle Button */}
-      <button
-        onClick={() => setDarkMode(!darkMode)}
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px"
-        }}
-      >
-        {darkMode ? "☀️ Light" : "🌙 Dark"}
+      {/* 🌙 Dark Mode */}
+      <button className="toggle-btn" onClick={() => setDarkMode(!darkMode)}>
+        {darkMode ? "☀️" : "🌙"}
       </button>
 
+      {/* ✅ FIXED TITLE COLOR */}
       <h1
-  style={{
-    color: darkMode ? "white" : "#333",
-    textAlign: "center"
-  }}
->
-  My To-Do
-</h1>
+        className="title"
+        style={{ color: darkMode ? "white" : "#222" }}
+      >
+        My To-Do
+      </h1>
+
+      {/* 🔍 Search */}
+      <div className="search-box">
+        <input
+          type="text"
+          placeholder="🔍 Search tasks..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
       <div className="card-container">
         {cards.map((card) => (
-          <div
-            key={card.id}
-            className="card"
-            style={{
-              background: darkMode ? "#2c2c3e" : "#e7cc95"
-            }}
-          >
-            <button
-  className="delete-card"
-  style={{
-    color: darkMode ? "#ff6b6b" : "black",
-    background: "transparent",
-    border: "none",
-    cursor: "pointer"
-  }}
->
-  🗑
-</button>
+          <div key={card.id} className="card">
+            <button className="delete-card" onClick={() => deleteCard(card.id)}>
+              🗑
+            </button>
 
-            <h2
-  style={{
-    color: darkMode ? "white" : "#333"
-  }}
->
-  {card.title}
-</h2>
+            {/* ✅ FIXED CARD TITLE COLOR */}
+            <h2 style={{ color: darkMode ? "white" : "#333" }}>
+              {card.title}
+            </h2>
 
             <ul>
-              {card.tasks.map((task, index) => (
-                <li key={index}>
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => toggleTask(card.id, index)}
-                  />
-
-                  {task.editing ? (
+              {card.tasks
+                .filter((task) =>
+                  task.text.toLowerCase().includes(search.toLowerCase())
+                )
+                .map((task, index) => (
+                  <li key={index}>
                     <input
-                      value={task.text}
-                      onChange={(e) =>
-                        saveEdit(card.id, index, e.target.value)
-                      }
-                      onBlur={() =>
-                        saveEdit(card.id, index, task.text)
-                      }
-                      autoFocus
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={() => toggleTask(card.id, index)}
                     />
-                  ) : (
-                    <span
-                      onDoubleClick={() =>
-                        startEdit(card.id, index)
-                      }
-                      style={{
-                        textDecoration: task.completed
-                          ? "line-through"
-                          : "none",
-                        marginLeft: "10px",
-                        cursor: "pointer"
-                      }}
-                    >
-                      {task.text}
-                    </span>
-                  )}
 
-                  <button
-  onClick={() => deleteTask(card.id, index)}
-  className="delete-task"
-  style={{
-    color: darkMode ? "#ff6b6b" : "red",
-    background: "transparent",
-    border: "none",
-    cursor: "pointer",
-    marginLeft: "10px"
-  }}
->
-  ✖
-</button>
-                </li>
-              ))}
+                    {task.editing ? (
+                      <input
+                        value={task.text}
+                        onChange={(e) =>
+                          saveEdit(card.id, index, e.target.value)
+                        }
+                        onBlur={() =>
+                          saveEdit(card.id, index, task.text)
+                        }
+                        autoFocus
+                      />
+                    ) : (
+                      /* ✅ FIXED LINE-THROUGH + DARK MODE TEXT */
+                      <span
+                        onDoubleClick={() =>
+                          startEdit(card.id, index)
+                        }
+                        style={{
+                          textDecoration: task.completed
+                            ? "line-through"
+                            : "none",
+                          marginLeft: "10px",
+                          color: darkMode ? "white" : "black"
+                        }}
+                      >
+                        {task.text}
+                      </span>
+                    )}
+
+                    <button
+                      onClick={() => deleteTask(card.id, index)}
+                      className="delete-task"
+                    >
+                      ✖
+                    </button>
+                  </li>
+                ))}
             </ul>
 
             <div className="add-task">
