@@ -8,13 +8,33 @@ function App() {
 
   useEffect(() => {
     const savedCards = JSON.parse(localStorage.getItem("cards"));
-    if (savedCards) {
-      setCards(savedCards);
-    }
+    if (savedCards) setCards(savedCards);
   }, []);
 
   useEffect(() => {
     localStorage.setItem("cards", JSON.stringify(cards));
+  }, [cards]);
+
+  // 🔔 Reminder checker
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+
+      cards.forEach((card) => {
+        card.tasks.forEach((task) => {
+          if (task.reminderTime && !task.notified) {
+            const reminder = new Date(task.reminderTime).getTime();
+
+            if (reminder <= now) {
+              alert(`🔔 Reminder: ${task.text}`);
+              task.notified = true;
+            }
+          }
+        });
+      });
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, [cards]);
 
   const addCard = () => {
@@ -22,7 +42,8 @@ function App() {
       id: Date.now(),
       title: "New List",
       tasks: [],
-      newTask: ""
+      newTask: "",
+      reminderTime: ""
     };
     setCards([...cards, newCard]);
   };
@@ -39,6 +60,14 @@ function App() {
     );
   };
 
+  const updateReminder = (cardId, value) => {
+    setCards(
+      cards.map((card) =>
+        card.id === cardId ? { ...card, reminderTime: value } : card
+      )
+    );
+  };
+
   const addTask = (cardId) => {
     setCards(
       cards.map((card) => {
@@ -47,9 +76,16 @@ function App() {
             ...card,
             tasks: [
               ...card.tasks,
-              { text: card.newTask, completed: false, editing: false }
+              {
+                text: card.newTask,
+                completed: false,
+                editing: false,
+                reminderTime: card.reminderTime,
+                notified: false
+              }
             ],
-            newTask: ""
+            newTask: "",
+            reminderTime: ""
           };
         }
         return card;
@@ -84,6 +120,7 @@ function App() {
     );
   };
 
+  // ✅ FIXED EDIT SYSTEM
   const startEdit = (cardId, index) => {
     setCards(
       cards.map((card) => {
@@ -97,12 +134,24 @@ function App() {
     );
   };
 
-  const saveEdit = (cardId, index, newText) => {
+  const updateEditText = (cardId, index, value) => {
     setCards(
       cards.map((card) => {
         if (card.id === cardId) {
           const updated = [...card.tasks];
-          updated[index].text = newText;
+          updated[index].text = value;
+          return { ...card, tasks: updated };
+        }
+        return card;
+      })
+    );
+  };
+
+  const saveEdit = (cardId, index) => {
+    setCards(
+      cards.map((card) => {
+        if (card.id === cardId) {
+          const updated = [...card.tasks];
           updated[index].editing = false;
           return { ...card, tasks: updated };
         }
@@ -122,20 +171,14 @@ function App() {
         color: darkMode ? "white" : "black"
       }}
     >
-      {/* 🌙 Dark Mode */}
       <button className="toggle-btn" onClick={() => setDarkMode(!darkMode)}>
         {darkMode ? "☀️" : "🌙"}
       </button>
 
-      {/* ✅ FIXED TITLE COLOR */}
-      <h1
-        className="title"
-        style={{ color: darkMode ? "white" : "#222" }}
-      >
+      <h1 className="title" style={{ color: darkMode ? "white" : "#222" }}>
         My To-Do
       </h1>
 
-      {/* 🔍 Search */}
       <div className="search-box">
         <input
           type="text"
@@ -152,7 +195,6 @@ function App() {
               🗑
             </button>
 
-            {/* ✅ FIXED CARD TITLE COLOR */}
             <h2 style={{ color: darkMode ? "white" : "#333" }}>
               {card.title}
             </h2>
@@ -174,15 +216,12 @@ function App() {
                       <input
                         value={task.text}
                         onChange={(e) =>
-                          saveEdit(card.id, index, e.target.value)
+                          updateEditText(card.id, index, e.target.value)
                         }
-                        onBlur={() =>
-                          saveEdit(card.id, index, task.text)
-                        }
+                        onBlur={() => saveEdit(card.id, index)}
                         autoFocus
                       />
                     ) : (
-                      /* ✅ FIXED LINE-THROUGH + DARK MODE TEXT */
                       <span
                         onDoubleClick={() =>
                           startEdit(card.id, index)
@@ -205,10 +244,19 @@ function App() {
                     >
                       ✖
                     </button>
+
+                    {/* ⏰ SHOW REMINDER */}
+                    {task.reminderTime && (
+                      <small style={{ marginLeft: "10px" }}>
+                        ⏰{" "}
+                        {new Date(task.reminderTime).toLocaleString()}
+                      </small>
+                    )}
                   </li>
                 ))}
             </ul>
 
+            {/* ADD TASK + TIME */}
             <div className="add-task">
               <input
                 type="text"
@@ -218,6 +266,15 @@ function App() {
                   updateInput(card.id, e.target.value)
                 }
               />
+
+              <input
+                type="datetime-local"
+                value={card.reminderTime || ""}
+                onChange={(e) =>
+                  updateReminder(card.id, e.target.value)
+                }
+              />
+
               <button onClick={() => addTask(card.id)}>+</button>
             </div>
           </div>

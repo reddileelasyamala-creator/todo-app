@@ -99,12 +99,30 @@ li {
   align-items: center;
   justify-content: space-between;
   margin: 6px 0;
+  gap: 5px;
 }
 
-/* Task text spacing */
+/* Task text */
 li span {
   flex: 1;
   margin-left: 10px;
+}
+
+/* Edit input */
+li input[type="text"] {
+  flex: 1;
+  margin-left: 10px;
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+}
+
+/* Reminder text */
+li small {
+  font-size: 10px;
+  color: #ddd;
+  margin-left: 8px;
 }
 
 /* Delete task */
@@ -116,26 +134,33 @@ li span {
   margin-left: 10px;
 }
 
-/* Add task */
+/* Add task section */
 .add-task {
   display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin-top: 10px;
 }
 
+/* Add task inputs */
 .add-task input {
-  flex: 1;
-  padding: 6px;
-  border-radius: 5px;
+  padding: 8px;
+  border-radius: 6px;
   border: none;
   outline: none;
 }
 
+/* Datetime input */
+.add-task input[type="datetime-local"] {
+  font-size: 12px;
+}
+
+/* Add button */
 .add-task button {
-  padding: 6px 10px;
-  margin-left: 5px;
+  padding: 8px;
   border: none;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 6px;
   background: #2196f3;
   color: white;
 }
