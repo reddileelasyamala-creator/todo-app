@@ -4,7 +4,6 @@ import "./App.css";
 function App() {
   const [cards, setCards] = useState([]);
 
-  // 🔥 LOAD DATA (on start)
   useEffect(() => {
     const savedCards = JSON.parse(localStorage.getItem("cards"));
     if (savedCards) {
@@ -12,12 +11,10 @@ function App() {
     }
   }, []);
 
-  // 🔥 SAVE DATA (whenever cards change)
   useEffect(() => {
     localStorage.setItem("cards", JSON.stringify(cards));
   }, [cards]);
 
-  // ➕ Add new card
   const addCard = () => {
     const newCard = {
       id: Date.now(),
@@ -28,12 +25,10 @@ function App() {
     setCards([...cards, newCard]);
   };
 
-  // ❌ Delete entire card
   const deleteCard = (cardId) => {
     setCards(cards.filter((card) => card.id !== cardId));
   };
 
-  // ✏️ Update input inside card
   const updateInput = (cardId, value) => {
     setCards(
       cards.map((card) =>
@@ -42,7 +37,6 @@ function App() {
     );
   };
 
-  // ➕ Add task inside card
   const addTask = (cardId) => {
     setCards(
       cards.map((card) => {
@@ -51,7 +45,7 @@ function App() {
             ...card,
             tasks: [
               ...card.tasks,
-              { text: card.newTask, completed: false }
+              { text: card.newTask, completed: false, editing: false }
             ],
             newTask: ""
           };
@@ -61,7 +55,6 @@ function App() {
     );
   };
 
-  // ✔️ Toggle task
   const toggleTask = (cardId, index) => {
     setCards(
       cards.map((card) => {
@@ -75,7 +68,6 @@ function App() {
     );
   };
 
-  // ❌ Delete task
   const deleteTask = (cardId, index) => {
     setCards(
       cards.map((card) => {
@@ -90,17 +82,45 @@ function App() {
     );
   };
 
+  // ✏️ START EDIT
+  const startEdit = (cardId, index) => {
+    setCards(
+      cards.map((card) => {
+        if (card.id === cardId) {
+          const updated = [...card.tasks];
+          updated[index].editing = true;
+          return { ...card, tasks: updated };
+        }
+        return card;
+      })
+    );
+  };
+
+  // 💾 SAVE EDIT
+  const saveEdit = (cardId, index, newText) => {
+    setCards(
+      cards.map((card) => {
+        if (card.id === cardId) {
+          const updated = [...card.tasks];
+          updated[index].text = newText;
+          updated[index].editing = false;
+          return { ...card, tasks: updated };
+        }
+        return card;
+      })
+    );
+  };
+
   return (
     <div className="app">
       <h1 style={{ color: "#333", textAlign: "center" }}>
-  My To-Do
-</h1>
+        My To-Do
+      </h1>
 
       <div className="card-container">
         {cards.map((card) => (
           <div key={card.id} className="card">
-            
-            {/* Delete Card */}
+
             <button className="delete-card" onClick={() => deleteCard(card.id)}>
               🗑
             </button>
@@ -110,32 +130,51 @@ function App() {
             <ul>
               {card.tasks.map((task, index) => (
                 <li key={index}>
-  <input
-    type="checkbox"
-    checked={task.completed}
-    onChange={() => toggleTask(card.id, index)}
-  />
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={() => toggleTask(card.id, index)}
+                  />
 
-  <span
-    style={{
-      textDecoration: task.completed ? "line-through" : "none",
-      marginLeft: "10px"
-    }}
-  >
-    {task.text}
-  </span>
+                  {/* ✨ EDIT UI */}
+                  {task.editing ? (
+                    <input
+                      value={task.text}
+                      onChange={(e) =>
+                        saveEdit(card.id, index, e.target.value)
+                      }
+                      onBlur={() =>
+                        saveEdit(card.id, index, task.text)
+                      }
+                      autoFocus
+                    />
+                  ) : (
+                    <span
+                      onDoubleClick={() =>
+                        startEdit(card.id, index)
+                      }
+                      style={{
+                        textDecoration: task.completed
+                          ? "line-through"
+                          : "none",
+                        marginLeft: "10px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {task.text}
+                    </span>
+                  )}
 
-  <button
-    onClick={() => deleteTask(card.id, index)}
-    className="delete-task"
-  >
-    ✖
-  </button>
-</li>
+                  <button
+                    onClick={() => deleteTask(card.id, index)}
+                    className="delete-task"
+                  >
+                    ✖
+                  </button>
+                </li>
               ))}
             </ul>
 
-            {/* Add Task */}
             <div className="add-task">
               <input
                 type="text"
@@ -151,7 +190,6 @@ function App() {
         ))}
       </div>
 
-      {/* Floating Button */}
       <button className="add-card-btn" onClick={addCard}>
         +
       </button>
